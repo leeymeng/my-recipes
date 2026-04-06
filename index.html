@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的菜谱助手</title>
+    <style>
+        /* 基础样式 */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f7f6; }
+        header { text-align: center; margin-bottom: 30px; }
+        
+        /* 导航菜单 */
+        nav { display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; }
+        nav button { padding: 10px 20px; border: none; background: #ddd; border-radius: 20px; cursor: pointer; transition: 0.3s; font-size: 16px; }
+        nav button.active { background: #4CAF50; color: white; }
+
+        /* 筛选区域 */
+        .filter-section { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .filter-group { margin-bottom: 20px; }
+        .filter-group > label { display: block; margin-bottom: 10px; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        
+        select, input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        
+        /* 食材分类样式 */
+        .ingredient-category { margin-bottom: 10px; background: #f9f9f9; padding: 10px; border-radius: 6px; }
+        .ingredient-category strong { display: block; margin-bottom: 5px; color: #555; }
+        .checkbox-label { display: inline-block; margin-right: 15px; margin-bottom: 5px; font-weight: normal; cursor: pointer; }
+        .checkbox-label input { margin-right: 5px; }
+
+        .btn-search { width: 100%; padding: 12px; background: #4CAF50; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        .btn-search:hover { background: #45a049; }
+
+        /* 菜谱卡片展示 */
+        .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .recipe-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .recipe-card h3 { margin-top: 0; color: #2c3e50; }
+        .tag { display: inline-block; background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-right: 5px; }
+        
+        /* 控制页面显示隐藏 */
+        .page { display: none; }
+        .page.active { display: block; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🍳 菜谱实验室</h1>
+    </header>
+
+    <nav>
+        <button onclick="showPage('all-recipes')" id="nav-all">全部菜谱</button>
+        <button onclick="showPage('what-to-eat')" id="nav-recommend">今天吃什么</button>
+    </nav>
+
+    <div id="all-recipes" class="page">
+        <div class="recipe-grid" id="full-list"></div>
+    </div>
+
+    <div id="what-to-eat" class="page">
+        <div class="filter-section">
+            
+            <div class="filter-group">
+                <label>1. 选择口味</label>
+                <select id="taste-filter">
+                    <option value="不限">不限</option>
+                    <option value="酸甜">酸甜</option>
+                    <option value="咸鲜">咸鲜</option>
+                    <option value="麻辣">麻辣</option>
+                    <option value="酸辣">酸辣</option>
+                    <option value="清淡">清淡</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>2. 家里有什么食材？(可多选)</label>
+                
+                <div class="ingredient-category">
+                    <strong>🥬 蔬菜类：</strong>
+                    <label class="checkbox-label"><input type="checkbox" value="西红柿" class="ing-chk">西红柿</label>
+                    <label class="checkbox-label"><input type="checkbox" value="黄瓜" class="ing-chk">黄瓜</label>
+                    <label class="checkbox-label"><input type="checkbox" value="白菜" class="ing-chk">白菜</label>
+                    <label class="checkbox-label"><input type="checkbox" value="土豆" class="ing-chk">土豆</label>
+                    <label class="checkbox-label"><input type="checkbox" value="葱" class="ing-chk">葱</label>
+                    <label class="checkbox-label"><input type="checkbox" value="青椒" class="ing-chk">青椒</label>
+                    <label class="checkbox-label"><input type="checkbox" value="金针菇" class="ing-chk">金针菇</label>
+                    <label class="checkbox-label"><input type="checkbox" value="藕" class="ing-chk">藕</label>
+                </div>
+                
+                <div class="ingredient-category">
+                    <strong>🥩 肉类：</strong>
+                    <label class="checkbox-label"><input type="checkbox" value="排骨" class="ing-chk">排骨</label>
+                    <label class="checkbox-label"><input type="checkbox" value="猪肉" class="ing-chk">猪肉</label>
+                    <label class="checkbox-label"><input type="checkbox" value="鸡肉" class="ing-chk">鸡肉</label>
+                    <label class="checkbox-label"><input type="checkbox" value="鸡肉" class="ing-chk">牛肉</label>
+                </div>
+
+                <div class="ingredient-category">
+                    <strong>🫘 豆制与蛋类：</strong>
+                    <label class="checkbox-label"><input type="checkbox" value="鸡蛋" class="ing-chk">鸡蛋</label>
+                    <label class="checkbox-label"><input type="checkbox" value="豆腐" class="ing-chk">豆腐</label>
+                    <label class="checkbox-label"><input type="checkbox" value="腐竹" class="ing-chk">腐竹</label>
+                    <label class="checkbox-label"><input type="checkbox" value="豆片" class="ing-chk">豆片</label>
+                </div>
+                
+                <div class="ingredient-category">
+                    <strong>🍚 主食类：</strong>
+                    <label class="checkbox-label"><input type="checkbox" value="面条" class="ing-chk">面条</label>
+                    <label class="checkbox-label"><input type="checkbox" value="大米" class="ing-chk">大米</label>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label>3. 没找到想吃的？自己输入：</label>
+                <input type="text" id="ingredient-input" placeholder="例如：番茄 牛肉 (用空格分开)">
+            </div>
+
+            <button class="btn-search" onclick="searchRecipes()">帮我推荐！</button>
+        </div>
+        <div class="recipe-grid" id="search-results"></div>
+    </div>
+
+    <script>
+        // 核心数据 (这里你可以随意增加你喜欢的菜)
+        const recipes = [
+            { name: "西红柿炒鸡蛋", taste: "咸鲜", ingredients: ["西红柿", "鸡蛋"], time: "午餐/晚餐" },
+            { name: "清蒸鱼", taste: "清淡", ingredients: ["鱼", "葱", "姜"], time: "晚餐" },
+            { name: "麻婆豆腐", taste: "麻辣", ingredients: ["豆腐", "猪肉"], time: "午餐/晚餐" },
+            { name: "皮蛋瘦肉粥", taste: "咸鲜", ingredients: ["大米", "皮蛋", "猪肉"], time: "早餐" },
+            { name: "糖醋排骨", taste: "酸甜", ingredients: ["排骨"], time: "午餐/晚餐" },
+            { name: "白菜肉丝面", taste: "咸鲜", ingredients: ["面条", "白菜", "猪肉"], time: "早餐/午餐" },
+            { name: "黄瓜炒鸡蛋", taste: "清淡", ingredients: ["黄瓜", "鸡蛋"], time: "晚餐" },
+            { name: "土豆炒肉", taste: "咸鲜", ingredients: ["土豆", "猪肉"], time: "午餐/晚餐" },
+            { name: "醋溜土豆丝", taste: "酸辣", ingredients: ["土豆"], time: "午餐/晚餐" },
+            { name: "炒腐竹", taste: "清淡", ingredients: ["腐竹"], time: "午餐/晚餐" },
+            { name: "醋溜土豆丝", taste: "酸辣", ingredients: ["土豆"], time: "午餐/晚餐" },
+            { name: "青椒炒肉丝", taste: "咸鲜", ingredients: ["青椒", "猪肉"], time: "午餐/晚餐" },
+            { name: "青椒豆片", taste: "咸鲜", ingredients: ["青椒", "豆片"], time: "午餐/晚餐" },
+            { name: "鱼香肉丝", taste: "酸甜", ingredients: ["猪肉", "木耳", "胡萝卜"], time: "午餐/晚餐" },
+            { name: "宫保鸡丁", taste: "麻辣", ingredients: ["鸡肉", "黄瓜", "花生", "葱"], time: "午餐/晚餐" },
+            { name: "红烧肉", taste: "咸鲜", ingredients: ["猪肉", "姜", "葱"], time: "午餐/晚餐" },
+            { name: "地三鲜", taste: "咸鲜", ingredients: ["土豆", "茄子", "青椒"], time: "午餐/晚餐" },
+            { name: "蛋炒饭", taste: "咸鲜", ingredients: ["鸡蛋", "米饭"], time: "午餐/晚餐" },
+            { name: "肥牛拌饭", taste: "咸鲜", ingredients: ["牛肉","洋葱","米饭"], time: "午餐/晚餐" },
+            { name: "葱油拌面", taste: "咸鲜", ingredients: ["面条", "葱"], time: "早餐/午餐/晚餐" },
+            { name: "肉末粉条", taste: "咸鲜", ingredients: ["猪肉", "粉条", "葱", "姜"], time: "午餐/晚餐" },
+            { name: "香菇青菜", taste: "清淡", ingredients: ["香菇", "白菜", "大蒜"], time: "午餐/晚餐" },
+            { name: "麻辣香锅", taste: "麻辣", ingredients: ["猪肉", "牛肉", "虾", "藕", "金针菇", "豆腐"], time: "午餐/晚餐" },
+            { name: "回锅肉", taste: "麻辣", ingredients: ["猪肉", "青椒", "葱", "姜", "大蒜"], time: "午餐/晚餐" },
+            { name: "酸汤肥牛", taste: "酸辣", ingredients: ["牛肉", "金针菇", "辣椒", "大蒜", "葱"], time: "午餐/晚餐" },
+            { name: "豆角焖面", taste: "咸鲜", ingredients: ["面条", "猪肉", "豆角", "大蒜"], time: "午餐/晚餐" },
+            { name: "手撕包菜", taste: "咸鲜", ingredients: ["包菜", "猪肉", "辣椒", "大蒜"], time: "午餐/晚餐" },
+            { name: "鸡蛋羹", taste: "清淡", ingredients: ["鸡蛋"], time: "午餐/晚餐" },
+            { name: "牛肉板面", taste: "麻辣", ingredients: ["牛肉","面条"], time: "早餐/晚餐" },
+            { name: "番茄炖牛腩", taste: "咸鲜", ingredients: ["西红柿", "牛肉", "葱", "姜"], time: "午餐/晚餐" }
+
+
+
+
+        ];
+
+        // 页面切换功能
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            if(pageId === 'all-recipes') {
+                document.getElementById('nav-all').classList.add('active');
+                renderList(recipes, 'full-list');
+            } else {
+                document.getElementById('nav-recommend').classList.add('active');
+            }
+        }
+
+        // 渲染列表的通用函数
+        function renderList(data, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = data.length ? '' : '<p style="text-align:center; color:#888;">没找到匹配的菜谱，去超市进点货吧？🛒</p>';
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'recipe-card';
+                card.innerHTML = `
+                    <h3>${item.name}</h3>
+                    <p><span class="tag">${item.taste}</span><span class="tag">${item.time}</span></p>
+                    <p style="font-size: 14px; color: #666;">食材：${item.ingredients.join(', ')}</p>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // 核心筛选逻辑升级版！
+        function searchRecipes() {
+            const selectedTaste = document.getElementById('taste-filter').value;
+            
+            // 1. 获取所有打钩的食材
+            const checkedCheckboxes = document.querySelectorAll('.ing-chk:checked');
+            const checkedIngredients = Array.from(checkedCheckboxes).map(box => box.value);
+            
+            // 2. 获取输入框的食材（按照空格拆分）
+            const inputText = document.getElementById('ingredient-input').value.trim();
+            const typedIngredients = inputText ? inputText.split(/\s+/) : [];
+            
+            // 3. 把打钩的食材和输入的食材合并成一个大数组
+            const allWantedIngredients = [...checkedIngredients, ...typedIngredients];
+
+            // 4. 开始过滤菜谱
+            const filtered = recipes.filter(recipe => {
+                // 口味匹配
+                const tasteMatch = (selectedTaste === "不限") || (recipe.taste === selectedTaste);
+                
+                // 食材匹配逻辑：如果用户什么都没选也没填，就展示所有符合口味的菜。
+                // 如果用户选了或填了，只要菜谱里包含【任意一个】用户想要的食材，就推荐出来。
+                let ingredientMatch = true;
+                if (allWantedIngredients.length > 0) {
+                    ingredientMatch = allWantedIngredients.some(wanted => 
+                        recipe.ingredients.some(recipeIng => recipeIng.includes(wanted) || wanted.includes(recipeIng))
+                    );
+                }
+
+                return tasteMatch && ingredientMatch;
+            });
+
+            renderList(filtered, 'search-results');
+        }
+
+        // 初始化显示第一页
+        showPage('all-recipes');
+    </script>
+</body>
+</html>
